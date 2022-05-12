@@ -1,0 +1,4 @@
+{
+  "appService.defaultWebAppToDeploy": "/subscriptions/d299d372-15db-49c3-baba-deecd5ccf456/resourceGroups/appsvc_linux_centralus_basic/providers/Microsoft.Web/sites/ConquerMap",
+  "appService.deploySubpath": "."
+}

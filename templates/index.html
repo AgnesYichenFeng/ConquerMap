@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Get weather along a route - Azure Maps Web SDK Samples</title>
+
+    <meta charset="utf-8" />
+	<link rel="shortcut icon" href="/favicon.ico"/>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="This sample shows how to retrieve weather data for all the waypoints along a route." />
+    <meta name="keywords" content="Microsoft maps, map, gis, API, SDK, REST, service, weather, AccuWeather, forecast, directions, route, routing" />
+    <meta name="author" content="Microsoft Azure Maps" />
+    <meta name="screenshot" content="screenshot.jpg" />
+
+    <!-- Add references to the Azure Maps Map control JavaScript and CSS files. -->
+    <link href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" rel="stylesheet" />
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+    
+    <!-- Add a reference to the Azure Maps Services Module JavaScript file. -->
+    <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js"></script>
+    
+    <script src="{{url_for('static', filename='routeSearch.js')}}"> </script>
+    <script src="{{url_for('static', filename='userPost.js')}}"> </script>
+    <script src="{{url_for('static', filename='jquery.js')}}"></script>
+
+
+
+  </head>
+  <body onload="GetMap()">
+      <div id="myMap" style="position:relative;width:100%;min-width:290px;height:660px;">
+      </div>
+
+      <div style="width:calc(100% - 30px);min-width:290px;margin-top:10px;">
+        Click anywhere on the map to retrieve current location and weather conditions.
+      </div>
+  
+      <div style="position:absolute;top:15px;left:15px;background-color:white;padding:10px;border-radius:10px;">
+          <table>
+              <tr>
+                <td>Find route </td>
+              </tr>
+              <tr>
+                  <td>Start: </td>
+                  <td><input type="text" id="startTbx" value="Ithaca" /></td>
+              </tr>
+              <tr>
+                  <td>End: </td>
+                  <td><input type="text" id="endTbx" value="Elmira" /></td>
+              </tr>
+              <tr>
+                  <td></td>
+                  <td><input type="button" value="Calculate Route" onclick="calculateRoute()" /></td>
+              </tr>
+              <tr>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Find points of interest </td>
+              </tr>
+              <tr>
+                <td>Center: </td>
+              </tr>
+              <tr>
+                <td>Latitude</td>
+                <td><input type="text" id="centerLatTbx" value="42.441780" /></td>
+              </tr>
+              <tr>
+                <td>Longitude</td>
+                <td><input type="text" id="centerLonTbx" value="-76.486120" /></td>
+              </tr>
+              <tr>
+                <td>I'm interested in </td>
+                <td><input type="text" id="interestTbx" value="park" /></td>
+                <td><input type="button" value="Find" onclick="getPoints()" /></td>
+              </tr>
+          </table>
+      </div>
+      
+      <div id="makePost" style="position:absolute;top:30px;right:15px;
+      background-color:white;padding:10px;border-radius:10px;">
+      <form action='makePost' method="POST">
+        <table>
+          <tr>
+            <td>Make a Post</td>
+          </tr>
+          <tr>
+            <td>Lastname: </td>
+            <td><input type="text" name="usernameTbx" id="usernameTbx" placeholder="Lastname" 
+              tyle="color: rgba(43, 41, 41, 0.82);"/></td>
+          </tr>
+          <tr>
+              <td>Message: </td>
+              <td><input type="text" name="msgTbx" id="msgTbx" placeholder="Enter your message here." 
+                style="color: rgba(43, 41, 41, 0.82);"/></td>
+          </tr>
+          <tr>
+            <td>Latitude: </td>
+            <td><input type="text" name="latTbx" id="latTbx" placeholder="e.g. 42.4440" 
+              tyle="color: rgba(43, 41, 41, 0.82);"/></td>
+          </tr>
+          <tr>
+              <td>Longitude: </td>
+              <td><input type="text" name="longTbx" id="longTbx" placeholder="e.g. -76.5019" 
+                style="color: rgba(43, 41, 41, 0.82);"/></td>
+          </tr>
+          <TR>
+            <TD class = "select">Danger level:       
+            </TD>   
+            <TD ALIGN="center">
+              <select name="dangerLevel" id="dangerLevel">
+                <option value="0">None</option>
+                <option value="1">Low</option>
+                <option value="2">Moderate</option>
+                <option value="3">Considerable</option>
+                <option value="4">High</option>
+                <option value="5">Extreme</option>
+              </select>
+            </TD>        
+          </TR>
+        </table>
+        <input type="submit" value="Submit">
+      </form>
+      </div>
+
+      <div id="getAllPosts" style="position:absolute;top:320px;right:15px;
+      background-color:white;padding:10px;border-radius:10px;">
+      <form action='getPosts' method="GET">
+        <table>
+          <tr>
+            <td>Get All Posts</td>
+          </tr>
+          <tr>
+            <td>Latitude: </td>
+            <td><input type="text" name="latCenter" id="latCenter" placeholder="e.g. 42.4440" 
+              tyle="color: rgba(43, 41, 41, 0.82);"/></td>
+          </tr>
+          <tr>
+              <td>Longitude: </td>
+              <td><input type="text" name="longCenter" id="longCenter" placeholder="e.g. -76.5019" 
+                style="color: rgba(43, 41, 41, 0.82);"/></td>
+          </tr>
+          <TR>
+            <TD class = "select">Time Range:       
+            </TD>   
+            <TD ALIGN="center">
+              <select name="selectPostTime" id="selectPostTime">
+                <option value="1">One Day</option>
+                <option value="7">One Week</option>
+                <option value="30">One Month</option>
+                <option value="365">One Year</option>
+                <option value="10000">All</option>
+              </select>
+            </TD>        
+          </TR>
+        </table>
+        <button name="showPostsButton" type="submit" id="showPostsButton" onclick="showPosts()">Get Posts</button>
+      </form>
+      <p>{{postData}}</p>
+      </div>
+
+      
+      
+</body>
+</html>
